@@ -50,7 +50,7 @@ public class HealthCheckController {
         //achar instancias
         List<InstanceInfo> instances = eurekaClient.getInstancesById(name);
 
-        InstanceInfo instance = instances.getFirst();
+        InstanceInfo instance = instances.get(0);
         //montar requisicao para a instancia que achou antes
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://"+instance.getIPAddr() + ":" + instance.getPort()+"/receiveCall/"+appName))
@@ -67,20 +67,23 @@ public class HealthCheckController {
     }
     
     /*faz a requisicao no Client B para ele gerar um numero aleatorio E somar ao numero aleatorio do client C*/
-    @GetMapping("/somaNumeroBeC/{nameB}")
-    public int getNumeroBeC(@PathVariable String nameB) throws URISyntaxException {
+    @GetMapping("/somaNumeroBeC/{nameB}/{nameC}")
+    public String getNumeroBeC(@PathVariable String nameB, @PathVariable String nameC) throws URISyntaxException {
         //achar instancias
         List<InstanceInfo> instances = eurekaClient.getInstancesById(nameB);
 
         InstanceInfo instance = instances.getFirst();
         //montar requisicao para a instancia que achou antes
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://"+instance.getIPAddr() + ":" + instance.getPort()+"/geraNumero"))
+                .uri(new URI("http://"+instance.getIPAddr() + ":" + instance.getPort()+"/geraNumero/"+ nameC))
                 .GET()
                 .build();
         try {
-            HttpResponse<String> response = HttpClient.newBuilder().build().send(request, HttpResponse.BodyHandlers.ofString());
-            return Integer.parseInt(response.body().toString());
+
+        	HttpResponse<String> response = HttpClient.newBuilder().build().send(request, HttpResponse.BodyHandlers.ofString());
+
+            String responseBody = response.body();
+            return responseBody;   
             
         } catch (IOException e) {
         	/*print de erro */
@@ -89,6 +92,7 @@ public class HealthCheckController {
         	System.err.println(e.getLocalizedMessage());
         }
         
-        return -1;
+        return String.valueOf(-1);
     }
+    
 }
